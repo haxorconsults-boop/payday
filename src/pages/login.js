@@ -6,17 +6,16 @@ import { showToast } from '../components/toast.js';
 import { navigate } from '../router.js';
 
 export function renderLogin() {
-    const el = document.createElement('div');
-    el.className = 'page flex items-center justify-center';
-    el.style.minHeight = '100vh';
-    el.style.background = 'var(--bg-primary)';
+  const el = document.createElement('div');
+  el.className = 'page flex items-center justify-center';
+  el.style.minHeight = '100vh';
+  el.style.background = 'var(--bg-primary)';
 
-    el.innerHTML = `
+  el.innerHTML = `
     <div class="container container-sm" style="max-width: 420px; padding: 40px 20px;">
       <div class="text-center mb-xl animate-slide-up">
         <a href="#/" class="navbar-brand justify-center mb-lg" style="font-size: 1.5rem;">
           <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
-          Payday
         </a>
         <h1 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 8px;">Welcome Back</h1>
         <p class="text-muted text-sm">Sign in with your phone number</p>
@@ -59,69 +58,69 @@ export function renderLogin() {
     </div>
   `;
 
-    let currentOTP = null;
+  let currentOTP = null;
 
-    setTimeout(() => {
-        const phoneInput = el.querySelector('#login-phone');
-        const sendBtn = el.querySelector('#send-otp-btn');
-        const otpInput = el.querySelector('#login-otp');
-        const verifyBtn = el.querySelector('#verify-otp-btn');
-        const resendBtn = el.querySelector('#resend-otp-btn');
-        const phoneStep = el.querySelector('#phone-step');
-        const otpStep = el.querySelector('#otp-step');
-        const otpPhoneDisplay = el.querySelector('#otp-phone-display');
+  setTimeout(() => {
+    const phoneInput = el.querySelector('#login-phone');
+    const sendBtn = el.querySelector('#send-otp-btn');
+    const otpInput = el.querySelector('#login-otp');
+    const verifyBtn = el.querySelector('#verify-otp-btn');
+    const resendBtn = el.querySelector('#resend-otp-btn');
+    const phoneStep = el.querySelector('#phone-step');
+    const otpStep = el.querySelector('#otp-step');
+    const otpPhoneDisplay = el.querySelector('#otp-phone-display');
 
-        sendBtn.addEventListener('click', async () => {
-            const phone = normalizePhone(phoneInput.value);
-            if (!phone || phone.length < 12) {
-                showToast('Enter a valid phone number', 'error');
-                return;
-            }
+    sendBtn.addEventListener('click', async () => {
+      const phone = normalizePhone(phoneInput.value);
+      if (!phone || phone.length < 12) {
+        showToast('Enter a valid phone number', 'error');
+        return;
+      }
 
-            sendBtn.disabled = true;
-            sendBtn.innerHTML = '<span class="spinner"></span> Sending...';
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<span class="spinner"></span> Sending...';
 
-            const result = await simulateOTP(phone);
-            currentOTP = result.otp;
+      const result = await simulateOTP(phone);
+      currentOTP = result.otp;
 
-            showToast(`OTP sent! (Demo: ${result.otp})`, 'success');
-            otpPhoneDisplay.textContent = phoneInput.value;
-            phoneStep.classList.add('hidden');
-            otpStep.classList.remove('hidden');
-            otpInput.focus();
-        });
+      showToast(`OTP sent! (Demo: ${result.otp})`, 'success');
+      otpPhoneDisplay.textContent = phoneInput.value;
+      phoneStep.classList.add('hidden');
+      otpStep.classList.remove('hidden');
+      otpInput.focus();
+    });
 
-        verifyBtn.addEventListener('click', () => {
-            const otpValue = otpInput.value.trim();
-            if (!verifyOTP(otpValue, currentOTP)) {
-                showToast('Invalid OTP. Try again.', 'error');
-                return;
-            }
+    verifyBtn.addEventListener('click', () => {
+      const otpValue = otpInput.value.trim();
+      if (!verifyOTP(otpValue, currentOTP)) {
+        showToast('Invalid OTP. Try again.', 'error');
+        return;
+      }
 
-            const phone = normalizePhone(phoneInput.value);
-            const user = store.findOne('users', u => u.phone === phone);
+      const phone = normalizePhone(phoneInput.value);
+      const user = store.findOne('users', u => u.phone === phone);
 
-            if (!user) {
-                showToast('No account found. Please register first.', 'warning');
-                navigate('/register');
-                return;
-            }
+      if (!user) {
+        showToast('No account found. Please register first.', 'warning');
+        navigate('/register');
+        return;
+      }
 
-            session.setCurrentUser(user);
-            showToast(`Welcome back, ${user.full_name || 'User'}!`, 'success');
-            navigate('/dashboard');
-        });
+      session.setCurrentUser(user);
+      showToast(`Welcome back, ${user.full_name || 'User'}!`, 'success');
+      navigate('/dashboard');
+    });
 
-        resendBtn.addEventListener('click', async () => {
-            const phone = normalizePhone(phoneInput.value);
-            const result = await simulateOTP(phone);
-            currentOTP = result.otp;
-            showToast(`OTP resent! (Demo: ${result.otp})`, 'info');
-        });
+    resendBtn.addEventListener('click', async () => {
+      const phone = normalizePhone(phoneInput.value);
+      const result = await simulateOTP(phone);
+      currentOTP = result.otp;
+      showToast(`OTP resent! (Demo: ${result.otp})`, 'info');
+    });
 
-        phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
-        otpInput.addEventListener('keydown', e => { if (e.key === 'Enter') verifyBtn.click(); });
-    }, 0);
+    phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
+    otpInput.addEventListener('keydown', e => { if (e.key === 'Enter') verifyBtn.click(); });
+  }, 0);
 
-    return el;
+  return el;
 }

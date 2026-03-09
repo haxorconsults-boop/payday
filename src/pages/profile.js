@@ -4,18 +4,18 @@ import { formatCurrency, formatDate, formatPhone, statusLabel, statusBadgeClass 
 import { navigate } from '../router.js';
 
 export function renderProfile() {
-    const user = session.getCurrentUser();
-    if (!user) { navigate('/login'); return document.createElement('div'); }
-    const freshUser = store.getById('users', user.id) || user;
-    const employment = store.findOne('employment', e => e.user_id === user.id);
-    const employer = employment ? store.getById('employers', employment.employer_id) : null;
-    const allLoans = store.find('loans', l => l.user_id === user.id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const user = session.getCurrentUser();
+  if (!user) { navigate('/login'); return document.createElement('div'); }
+  const freshUser = store.getById('users', user.id) || user;
+  const employment = store.findOne('employment', e => e.user_id === user.id);
+  const employer = employment ? store.getById('employers', employment.employer_id) : null;
+  const allLoans = store.find('loans', l => l.user_id === user.id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    const el = document.createElement('div');
-    el.className = 'page';
-    el.innerHTML = `
+  const el = document.createElement('div');
+  el.className = 'page';
+  el.innerHTML = `
     <nav class="navbar"><div class="container flex items-center justify-between">
-      <a href="#/dashboard" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /> Payday</a>
+      <a href="#/dashboard" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /></a>
       <a href="#/dashboard" class="btn btn-sm btn-secondary">← Back</a>
     </div></nav>
     <div class="container page-padded" style="max-width: 640px;">
@@ -89,8 +89,8 @@ export function renderProfile() {
     </div></div>
   `;
 
-    setTimeout(() => {
-        el.querySelector('#profile-logout')?.addEventListener('click', () => { session.logout(); navigate('/'); });
-    }, 0);
-    return el;
+  setTimeout(() => {
+    el.querySelector('#profile-logout')?.addEventListener('click', () => { session.logout(); navigate('/'); });
+  }, 0);
+  return el;
 }

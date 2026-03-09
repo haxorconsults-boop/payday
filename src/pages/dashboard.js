@@ -5,28 +5,27 @@ import { checkEligibility } from '../utils/eligibility.js';
 import { navigate } from '../router.js';
 
 export function renderDashboard() {
-    const user = session.getCurrentUser();
-    if (!user) { navigate('/login'); return document.createElement('div'); }
+  const user = session.getCurrentUser();
+  if (!user) { navigate('/login'); return document.createElement('div'); }
 
-    // Refresh user data
-    const freshUser = store.getById('users', user.id) || user;
-    const employment = store.findOne('employment', e => e.user_id === user.id);
-    const employer = employment ? store.getById('employers', employment.employer_id) : null;
-    const eligibility = checkEligibility(user.id);
-    const activeLoan = store.findOne('loans', l => l.user_id === user.id && ['active', 'overdue', 'pending_acceptance'].includes(l.status));
-    const allLoans = store.find('loans', l => l.user_id === user.id);
-    const recentRepayments = store.find('repayments', r => allLoans.some(l => l.id === r.loan_id)).slice(-5).reverse();
+  // Refresh user data
+  const freshUser = store.getById('users', user.id) || user;
+  const employment = store.findOne('employment', e => e.user_id === user.id);
+  const employer = employment ? store.getById('employers', employment.employer_id) : null;
+  const eligibility = checkEligibility(user.id);
+  const activeLoan = store.findOne('loans', l => l.user_id === user.id && ['active', 'overdue', 'pending_acceptance'].includes(l.status));
+  const allLoans = store.find('loans', l => l.user_id === user.id);
+  const recentRepayments = store.find('repayments', r => allLoans.some(l => l.id === r.loan_id)).slice(-5).reverse();
 
-    const el = document.createElement('div');
-    el.className = 'page';
+  const el = document.createElement('div');
+  el.className = 'page';
 
-    el.innerHTML = `
+  el.innerHTML = `
     <!-- Navbar -->
     <nav class="navbar">
       <div class="container flex items-center justify-between">
         <a href="#/dashboard" class="navbar-brand">
           <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
-          Payday
         </a>
         <ul class="navbar-nav">
           <li><a href="#/dashboard" class="active">Dashboard</a></li>
@@ -170,9 +169,9 @@ export function renderDashboard() {
     </div>
   `;
 
-    setTimeout(() => {
-        el.querySelector('#logout-btn')?.addEventListener('click', () => { session.logout(); navigate('/'); });
-    }, 0);
+  setTimeout(() => {
+    el.querySelector('#logout-btn')?.addEventListener('click', () => { session.logout(); navigate('/'); });
+  }, 0);
 
-    return el;
+  return el;
 }

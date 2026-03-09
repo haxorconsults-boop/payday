@@ -6,15 +6,15 @@ import { showToast } from '../components/toast.js';
 import { navigate } from '../router.js';
 
 export function renderRepay() {
-    const user = session.getCurrentUser();
-    if (!user) { navigate('/login'); return document.createElement('div'); }
-    const loan = store.findOne('loans', l => l.user_id === user.id && ['active', 'overdue'].includes(l.status));
+  const user = session.getCurrentUser();
+  if (!user) { navigate('/login'); return document.createElement('div'); }
+  const loan = store.findOne('loans', l => l.user_id === user.id && ['active', 'overdue'].includes(l.status));
 
-    const el = document.createElement('div');
-    el.className = 'page';
-    el.innerHTML = `
+  const el = document.createElement('div');
+  el.className = 'page';
+  el.innerHTML = `
     <nav class="navbar"><div class="container flex items-center justify-between">
-      <a href="#/dashboard" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /> Payday</a>
+      <a href="#/dashboard" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /></a>
       <a href="#/dashboard" class="btn btn-sm btn-secondary">← Back</a>
     </div></nav>
     <div class="container page-padded" style="max-width: 520px;">
@@ -96,60 +96,60 @@ export function renderRepay() {
     </div></div>
   `;
 
-    if (!loan) return el;
+  if (!loan) return el;
 
-    setTimeout(() => {
-        // Tab switching
-        el.querySelectorAll('.pay-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                el.querySelectorAll('.pay-tab').forEach(t => { t.classList.remove('active-tab'); t.className = t.className.replace('btn-primary', 'btn-secondary'); });
-                tab.classList.add('active-tab');
-                tab.className = tab.className.replace('btn-secondary', 'btn-primary');
-                el.querySelector('#stk-panel').classList.toggle('hidden', tab.dataset.tab !== 'stk');
-                el.querySelector('#paybill-panel').classList.toggle('hidden', tab.dataset.tab !== 'paybill');
-            });
+  setTimeout(() => {
+    // Tab switching
+    el.querySelectorAll('.pay-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        el.querySelectorAll('.pay-tab').forEach(t => { t.classList.remove('active-tab'); t.className = t.className.replace('btn-primary', 'btn-secondary'); });
+        tab.classList.add('active-tab');
+        tab.className = tab.className.replace('btn-secondary', 'btn-primary');
+        el.querySelector('#stk-panel').classList.toggle('hidden', tab.dataset.tab !== 'stk');
+        el.querySelector('#paybill-panel').classList.toggle('hidden', tab.dataset.tab !== 'paybill');
+      });
+    });
+
+    // Quick amounts
+    el.querySelectorAll('.quick-amt').forEach(btn => {
+      btn.addEventListener('click', () => el.querySelector('#stk-amount').value = btn.dataset.amt);
+    });
+
+    // STK Push
+    el.querySelector('#send-stk-btn')?.addEventListener('click', async () => {
+      const amt = Number(el.querySelector('#stk-amount').value);
+      if (!amt || amt <= 0 || amt > loan.balance) { showToast('Enter a valid amount', 'error'); return; }
+
+      el.querySelector('#send-stk-btn').disabled = true;
+      el.querySelector('#stk-animation').classList.remove('hidden');
+
+      const result = await simulateSTKPush(user.phone, amt, (step, msg) => {
+        const screen = el.querySelector('#stk-step-text');
+        const label = el.querySelector('#stk-step-label');
+        if (screen) {
+          const icons = { initiating: '📡', pin_prompt: '🔐', processing: '⏳', success: '✅', failed: '❌' };
+          screen.innerHTML = `<div style="font-size:2rem;margin-bottom:8px;">${icons[step] || '📱'}</div>${msg}`;
+        }
+        if (label) label.textContent = msg;
+      });
+
+      if (result.success) {
+        store.create('repayments', {
+          loan_id: loan.id, amount: amt, method: 'stk',
+          reference: result.reference, paid_at: new Date().toISOString()
         });
+        const newPaid = (Number(loan.amount_paid) || 0) + amt;
+        const newBal = Math.max(0, loan.total_due - newPaid);
+        store.update('loans', loan.id, { amount_paid: newPaid, balance: newBal, status: newBal <= 0 ? 'paid' : loan.status });
+        auditLog('user', user.id, 'REPAYMENT_STK', 'loans', loan.id, { amount: amt, ref: result.reference });
+        showToast(`Payment of ${formatCurrency(amt)} received!`, 'success');
+        setTimeout(() => navigate('/dashboard'), 2000);
+      } else {
+        showToast('Payment failed. Please try again.', 'error');
+        el.querySelector('#send-stk-btn').disabled = false;
+      }
+    });
+  }, 0);
 
-        // Quick amounts
-        el.querySelectorAll('.quick-amt').forEach(btn => {
-            btn.addEventListener('click', () => el.querySelector('#stk-amount').value = btn.dataset.amt);
-        });
-
-        // STK Push
-        el.querySelector('#send-stk-btn')?.addEventListener('click', async () => {
-            const amt = Number(el.querySelector('#stk-amount').value);
-            if (!amt || amt <= 0 || amt > loan.balance) { showToast('Enter a valid amount', 'error'); return; }
-
-            el.querySelector('#send-stk-btn').disabled = true;
-            el.querySelector('#stk-animation').classList.remove('hidden');
-
-            const result = await simulateSTKPush(user.phone, amt, (step, msg) => {
-                const screen = el.querySelector('#stk-step-text');
-                const label = el.querySelector('#stk-step-label');
-                if (screen) {
-                    const icons = { initiating: '📡', pin_prompt: '🔐', processing: '⏳', success: '✅', failed: '❌' };
-                    screen.innerHTML = `<div style="font-size:2rem;margin-bottom:8px;">${icons[step] || '📱'}</div>${msg}`;
-                }
-                if (label) label.textContent = msg;
-            });
-
-            if (result.success) {
-                store.create('repayments', {
-                    loan_id: loan.id, amount: amt, method: 'stk',
-                    reference: result.reference, paid_at: new Date().toISOString()
-                });
-                const newPaid = (Number(loan.amount_paid) || 0) + amt;
-                const newBal = Math.max(0, loan.total_due - newPaid);
-                store.update('loans', loan.id, { amount_paid: newPaid, balance: newBal, status: newBal <= 0 ? 'paid' : loan.status });
-                auditLog('user', user.id, 'REPAYMENT_STK', 'loans', loan.id, { amount: amt, ref: result.reference });
-                showToast(`Payment of ${formatCurrency(amt)} received!`, 'success');
-                setTimeout(() => navigate('/dashboard'), 2000);
-            } else {
-                showToast('Payment failed. Please try again.', 'error');
-                el.querySelector('#send-stk-btn').disabled = false;
-            }
-        });
-    }, 0);
-
-    return el;
+  return el;
 }

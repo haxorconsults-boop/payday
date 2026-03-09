@@ -8,19 +8,19 @@ import { showToast } from '../components/toast.js';
 import { navigate } from '../router.js';
 
 export function renderApply() {
-    const user = session.getCurrentUser();
-    if (!user) { navigate('/login'); return document.createElement('div'); }
+  const user = session.getCurrentUser();
+  if (!user) { navigate('/login'); return document.createElement('div'); }
 
-    const eligibility = checkEligibility(user.id);
-    const products = store.find('loan_products', p => p.active);
+  const eligibility = checkEligibility(user.id);
+  const products = store.find('loan_products', p => p.active);
 
-    const el = document.createElement('div');
-    el.className = 'page';
+  const el = document.createElement('div');
+  el.className = 'page';
 
-    el.innerHTML = `
+  el.innerHTML = `
     <nav class="navbar">
       <div class="container flex items-center justify-between">
-        <a href="#/dashboard" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /> Payday</a>
+        <a href="#/dashboard" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /></a>
         <div><a href="#/dashboard" class="btn btn-sm btn-secondary">← Dashboard</a></div>
       </div>
     </nav>
@@ -178,116 +178,116 @@ export function renderApply() {
     </div>
   `;
 
-    let currentOffer = null;
-    let selectedProduct = products.find(p => p.tenor_days === 30) || products[0];
+  let currentOffer = null;
+  let selectedProduct = products.find(p => p.tenor_days === 30) || products[0];
 
-    setTimeout(() => {
-        if (!eligibility.eligible) return;
+  setTimeout(() => {
+    if (!eligibility.eligible) return;
 
-        const slider = el.querySelector('#amount-slider');
-        const amountDisplay = el.querySelector('#amount-display');
+    const slider = el.querySelector('#amount-slider');
+    const amountDisplay = el.querySelector('#amount-display');
 
-        function updatePreview() {
-            const amount = Number(slider.value);
-            const offer = calculateOffer(amount, selectedProduct.tenor_days, selectedProduct.fee_rate);
-            currentOffer = { ...offer, product: selectedProduct };
-            amountDisplay.textContent = formatCurrency(amount);
-            el.querySelector('#preview-principal').textContent = formatCurrency(offer.principal);
-            el.querySelector('#preview-fee').textContent = formatCurrency(offer.fee);
-            el.querySelector('#preview-total').textContent = formatCurrency(offer.totalDue);
-            el.querySelector('#preview-due').textContent = formatDate(offer.dueDate);
-        }
+    function updatePreview() {
+      const amount = Number(slider.value);
+      const offer = calculateOffer(amount, selectedProduct.tenor_days, selectedProduct.fee_rate);
+      currentOffer = { ...offer, product: selectedProduct };
+      amountDisplay.textContent = formatCurrency(amount);
+      el.querySelector('#preview-principal').textContent = formatCurrency(offer.principal);
+      el.querySelector('#preview-fee').textContent = formatCurrency(offer.fee);
+      el.querySelector('#preview-total').textContent = formatCurrency(offer.totalDue);
+      el.querySelector('#preview-due').textContent = formatDate(offer.dueDate);
+    }
 
-        slider.addEventListener('input', updatePreview);
+    slider.addEventListener('input', updatePreview);
 
-        // Tenor buttons
-        el.querySelectorAll('.tenor-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                el.querySelectorAll('.tenor-btn').forEach(b => {
-                    b.style.borderColor = '';
-                    b.style.color = '';
-                    b.classList.remove('selected');
-                });
-                btn.style.borderColor = 'var(--green-primary)';
-                btn.style.color = 'var(--green-primary)';
-                btn.classList.add('selected');
-                selectedProduct = { id: btn.dataset.pid, tenor_days: Number(btn.dataset.days), fee_rate: Number(btn.dataset.rate) };
-                updatePreview();
-            });
+    // Tenor buttons
+    el.querySelectorAll('.tenor-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        el.querySelectorAll('.tenor-btn').forEach(b => {
+          b.style.borderColor = '';
+          b.style.color = '';
+          b.classList.remove('selected');
         });
+        btn.style.borderColor = 'var(--green-primary)';
+        btn.style.color = 'var(--green-primary)';
+        btn.classList.add('selected');
+        selectedProduct = { id: btn.dataset.pid, tenor_days: Number(btn.dataset.days), fee_rate: Number(btn.dataset.rate) };
+        updatePreview();
+      });
+    });
 
-        updatePreview(); // Initial
+    updatePreview(); // Initial
 
-        // Navigation
-        function goToApplyStep(n) {
-            el.querySelectorAll('.apply-step').forEach(s => s.classList.add('hidden'));
-            el.querySelector(`#apply-step-${n}`).classList.remove('hidden');
-            el.querySelectorAll('.stepper-step').forEach(s => {
-                const sN = Number(s.dataset.step);
-                s.classList.toggle('active', sN === n);
-                s.classList.toggle('completed', sN < n);
-            });
-        }
+    // Navigation
+    function goToApplyStep(n) {
+      el.querySelectorAll('.apply-step').forEach(s => s.classList.add('hidden'));
+      el.querySelector(`#apply-step-${n}`).classList.remove('hidden');
+      el.querySelectorAll('.stepper-step').forEach(s => {
+        const sN = Number(s.dataset.step);
+        s.classList.toggle('active', sN === n);
+        s.classList.toggle('completed', sN < n);
+      });
+    }
 
-        el.querySelector('#proceed-offer-btn').addEventListener('click', () => goToApplyStep(2));
-        el.querySelector('#back-elig-btn').addEventListener('click', () => goToApplyStep(1));
-        el.querySelector('#back-offer-btn').addEventListener('click', () => goToApplyStep(2));
+    el.querySelector('#proceed-offer-btn').addEventListener('click', () => goToApplyStep(2));
+    el.querySelector('#back-elig-btn').addEventListener('click', () => goToApplyStep(1));
+    el.querySelector('#back-offer-btn').addEventListener('click', () => goToApplyStep(2));
 
-        el.querySelector('#proceed-review-btn').addEventListener('click', () => {
-            if (!currentOffer) return;
-            el.querySelector('#review-principal').textContent = formatCurrency(currentOffer.principal);
-            el.querySelector('#review-fee').textContent = formatCurrency(currentOffer.fee);
-            el.querySelector('#review-total').textContent = formatCurrency(currentOffer.totalDue);
-            el.querySelector('#review-tenor').textContent = currentOffer.tenorDays + ' days';
-            el.querySelector('#review-due').textContent = formatDate(currentOffer.dueDate);
-            el.querySelector('#review-phone').textContent = user.phone;
-            goToApplyStep(3);
-        });
+    el.querySelector('#proceed-review-btn').addEventListener('click', () => {
+      if (!currentOffer) return;
+      el.querySelector('#review-principal').textContent = formatCurrency(currentOffer.principal);
+      el.querySelector('#review-fee').textContent = formatCurrency(currentOffer.fee);
+      el.querySelector('#review-total').textContent = formatCurrency(currentOffer.totalDue);
+      el.querySelector('#review-tenor').textContent = currentOffer.tenorDays + ' days';
+      el.querySelector('#review-due').textContent = formatDate(currentOffer.dueDate);
+      el.querySelector('#review-phone').textContent = user.phone;
+      goToApplyStep(3);
+    });
 
-        el.querySelector('#accept-loan-btn').addEventListener('click', async () => {
-            if (!el.querySelector('#apply-consent').checked) {
-                showToast('You must accept the terms', 'error');
-                return;
-            }
+    el.querySelector('#accept-loan-btn').addEventListener('click', async () => {
+      if (!el.querySelector('#apply-consent').checked) {
+        showToast('You must accept the terms', 'error');
+        return;
+      }
 
-            goToApplyStep(4);
+      goToApplyStep(4);
 
-            const employment = store.findOne('employment', e => e.user_id === user.id);
+      const employment = store.findOne('employment', e => e.user_id === user.id);
 
-            // Create loan
-            const loan = store.create('loans', {
-                user_id: user.id,
-                employer_id: employment?.employer_id || '',
-                product_id: currentOffer.product.id,
-                principal: currentOffer.principal,
-                fee: currentOffer.fee,
-                total_due: currentOffer.totalDue,
-                amount_paid: 0,
-                balance: currentOffer.totalDue,
-                due_date: currentOffer.dueDate,
-                status: 'active',
-                disbursement_phone: user.phone,
-                created_channel: 'app'
-            });
+      // Create loan
+      const loan = store.create('loans', {
+        user_id: user.id,
+        employer_id: employment?.employer_id || '',
+        product_id: currentOffer.product.id,
+        principal: currentOffer.principal,
+        fee: currentOffer.fee,
+        total_due: currentOffer.totalDue,
+        amount_paid: 0,
+        balance: currentOffer.totalDue,
+        due_date: currentOffer.dueDate,
+        status: 'active',
+        disbursement_phone: user.phone,
+        created_channel: 'app'
+      });
 
-            auditLog('user', user.id, 'LOAN_APPLIED', 'loans', loan.id, { amount: currentOffer.principal });
+      auditLog('user', user.id, 'LOAN_APPLIED', 'loans', loan.id, { amount: currentOffer.principal });
 
-            // Simulate disbursement
-            el.querySelector('#disburse-status').textContent = 'Sending to M-Pesa...';
-            const result = await simulateDisburse(user.phone, currentOffer.principal);
+      // Simulate disbursement
+      el.querySelector('#disburse-status').textContent = 'Sending to M-Pesa...';
+      const result = await simulateDisburse(user.phone, currentOffer.principal);
 
-            el.querySelector('#disburse-animation').classList.add('hidden');
-            el.querySelector('#disburse-success').classList.remove('hidden');
-            el.querySelector('#disburse-amount').textContent = formatCurrency(currentOffer.principal);
-            el.querySelector('#disburse-message').textContent = result.message;
+      el.querySelector('#disburse-animation').classList.add('hidden');
+      el.querySelector('#disburse-success').classList.remove('hidden');
+      el.querySelector('#disburse-amount').textContent = formatCurrency(currentOffer.principal);
+      el.querySelector('#disburse-message').textContent = result.message;
 
-            if (!result.success) {
-                store.update('loans', loan.id, { status: 'failed_disbursement' });
-            }
+      if (!result.success) {
+        store.update('loans', loan.id, { status: 'failed_disbursement' });
+      }
 
-            auditLog('user', user.id, 'LOAN_DISBURSED', 'loans', loan.id, { ref: result.provider_ref });
-        });
-    }, 0);
+      auditLog('user', user.id, 'LOAN_DISBURSED', 'loans', loan.id, { ref: result.provider_ref });
+    });
+  }, 0);
 
-    return el;
+  return el;
 }

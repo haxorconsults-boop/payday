@@ -1,14 +1,13 @@
 // Payday — Landing Page
 export function renderLanding() {
-    const el = document.createElement('div');
-    el.className = 'page';
-    el.innerHTML = `
+  const el = document.createElement('div');
+  el.className = 'page';
+  el.innerHTML = `
     <!-- NAVBAR -->
     <nav class="navbar">
       <div class="container flex items-center justify-between">
         <a href="#/" class="navbar-brand">
           <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
-          Payday
         </a>
         <ul class="navbar-nav" id="landing-nav">
           <li><a href="#/">Home</a></li>
@@ -164,8 +163,7 @@ export function renderLanding() {
         <div class="flex justify-between items-center flex-wrap gap-lg">
           <div>
             <div class="flex items-center gap-sm mb-sm">
-              <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
-              <strong>Payday</strong>
+              <img src="/payday-logo.png" alt="Payday" class="brand-logo footer-logo" />
             </div>
             <p class="text-sm text-muted">Instant short-term loans for salaried employees.</p>
           </div>
@@ -177,20 +175,20 @@ export function renderLanding() {
     </footer>
   `;
 
-    // Mobile menu toggle
-    setTimeout(() => {
-        const toggle = el.querySelector('#menu-toggle-btn');
-        const nav = el.querySelector('#landing-nav');
-        if (toggle && nav) {
-            toggle.addEventListener('click', () => nav.classList.toggle('open'));
-        }
-    }, 0);
+  // Mobile menu toggle
+  setTimeout(() => {
+    const toggle = el.querySelector('#menu-toggle-btn');
+    const nav = el.querySelector('#landing-nav');
+    if (toggle && nav) {
+      toggle.addEventListener('click', () => nav.classList.toggle('open'));
+    }
+  }, 0);
 
-    return el;
+  return el;
 }
 
 function featureCard(icon, title, desc, color) {
-    return `
+  return `
     <div class="card" style="padding: 28px;">
       <div style="width: 48px; height: 48px; border-radius: 12px; background: ${color}15; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 16px;">
         ${icon}
@@ -202,7 +200,7 @@ function featureCard(icon, title, desc, color) {
 }
 
 function stepCard(num, title, desc, color) {
-    return `
+  return `
     <div class="text-center" style="padding: 20px;">
       <div style="width: 56px; height: 56px; border-radius: 50%; background: ${color}; color: #000; font-weight: 900; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 0 20px ${color}40;">
         ${num}

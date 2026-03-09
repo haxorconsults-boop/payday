@@ -4,24 +4,24 @@ import { formatCurrency, formatDate, daysUntil, statusLabel, statusBadgeClass } 
 import { navigate } from '../router.js';
 
 export function renderLoanDetails() {
-    const user = session.getCurrentUser();
-    if (!user) { navigate('/login'); return document.createElement('div'); }
+  const user = session.getCurrentUser();
+  if (!user) { navigate('/login'); return document.createElement('div'); }
 
-    const loan = store.findOne('loans', l => l.user_id === user.id && ['active', 'overdue', 'pending_acceptance'].includes(l.status));
-    if (!loan) { navigate('/dashboard'); return document.createElement('div'); }
+  const loan = store.findOne('loans', l => l.user_id === user.id && ['active', 'overdue', 'pending_acceptance'].includes(l.status));
+  if (!loan) { navigate('/dashboard'); return document.createElement('div'); }
 
-    const product = store.getById('loan_products', loan.product_id);
-    const employer = store.getById('employers', loan.employer_id);
-    const repayments = store.find('repayments', r => r.loan_id === loan.id).sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at));
-    const paidPct = Math.min(100, ((loan.amount_paid / loan.total_due) * 100));
-    const daysLeft = daysUntil(loan.due_date);
+  const product = store.getById('loan_products', loan.product_id);
+  const employer = store.getById('employers', loan.employer_id);
+  const repayments = store.find('repayments', r => r.loan_id === loan.id).sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at));
+  const paidPct = Math.min(100, ((loan.amount_paid / loan.total_due) * 100));
+  const daysLeft = daysUntil(loan.due_date);
 
-    const el = document.createElement('div');
-    el.className = 'page';
-    el.innerHTML = `
+  const el = document.createElement('div');
+  el.className = 'page';
+  el.innerHTML = `
     <nav class="navbar">
       <div class="container flex items-center justify-between">
-        <a href="#/dashboard" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /> Payday</a>
+        <a href="#/dashboard" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /></a>
         <a href="#/dashboard" class="btn btn-sm btn-secondary">← Back</a>
       </div>
     </nav>
@@ -93,9 +93,9 @@ export function renderLoanDetails() {
       <a href="#/profile" class="bottom-nav-item"><span class="nav-icon">👤</span>Profile</a>
     </div></div>
   `;
-    return el;
+  return el;
 }
 
 function detailRow(label, value, bold = false) {
-    return `<div class="flex justify-between"><span class="text-sm text-muted">${label}</span><span class="${bold ? 'font-bold' : 'font-semibold'}">${value}</span></div>`;
+  return `<div class="flex justify-between"><span class="text-sm text-muted">${label}</span><span class="${bold ? 'font-bold' : 'font-semibold'}">${value}</span></div>`;
 }

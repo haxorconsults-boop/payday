@@ -2,13 +2,13 @@
 import { processUSSD } from '../utils/mock-ussd.js';
 
 export function renderUSSD() {
-    const el = document.createElement('div');
-    el.className = 'page';
-    el.style.background = 'linear-gradient(180deg, var(--bg-primary), #0d1117)';
+  const el = document.createElement('div');
+  el.className = 'page';
+  el.style.background = 'linear-gradient(180deg, var(--bg-primary), #0d1117)';
 
-    el.innerHTML = `
+  el.innerHTML = `
     <nav class="navbar"><div class="container flex items-center justify-between">
-      <a href="#/" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /> Payday</a>
+      <a href="#/" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /></a>
       <div class="flex gap-sm">
         <a href="#/login" class="btn btn-sm btn-outline">Login</a>
         <a href="#/" class="btn btn-sm btn-secondary">← Home</a>
@@ -70,72 +70,72 @@ export function renderUSSD() {
     </div>
   `;
 
-    setTimeout(() => {
-        const screen = el.querySelector('#ussd-screen');
-        const input = el.querySelector('#ussd-input');
-        let sessionText = ''; // Accumulated USSD text path
-        let sessionActive = false;
-        const demoPhone = '254712345001';
+  setTimeout(() => {
+    const screen = el.querySelector('#ussd-screen');
+    const input = el.querySelector('#ussd-input');
+    let sessionText = ''; // Accumulated USSD text path
+    let sessionActive = false;
+    const demoPhone = '254712345001';
 
-        function displayResponse(response) {
-            const isEnd = response.startsWith('END');
-            const text = response.replace(/^(CON|END)\s*/, '');
-            screen.textContent = text;
-            screen.scrollTop = screen.scrollHeight;
+    function displayResponse(response) {
+      const isEnd = response.startsWith('END');
+      const text = response.replace(/^(CON|END)\s*/, '');
+      screen.textContent = text;
+      screen.scrollTop = screen.scrollHeight;
 
-            if (isEnd) {
-                sessionActive = false;
-                sessionText = '';
-                input.placeholder = 'Session ended. Dial again.';
-            } else {
-                input.placeholder = 'Enter response...';
-            }
-            input.value = '';
-            input.focus();
-        }
+      if (isEnd) {
+        sessionActive = false;
+        sessionText = '';
+        input.placeholder = 'Session ended. Dial again.';
+      } else {
+        input.placeholder = 'Enter response...';
+      }
+      input.value = '';
+      input.focus();
+    }
 
-        function startSession() {
-            sessionText = '';
-            sessionActive = true;
-            const response = processUSSD('', demoPhone);
-            displayResponse(response);
-        }
+    function startSession() {
+      sessionText = '';
+      sessionActive = true;
+      const response = processUSSD('', demoPhone);
+      displayResponse(response);
+    }
 
-        function sendInput() {
-            const val = input.value.trim();
-            if (!sessionActive) {
-                startSession();
-                return;
-            }
-            if (!val) return;
+    function sendInput() {
+      const val = input.value.trim();
+      if (!sessionActive) {
+        startSession();
+        return;
+      }
+      if (!val) return;
 
-            if (sessionText === '') {
-                sessionText = val;
-            } else {
-                sessionText += '*' + val;
-            }
+      if (sessionText === '') {
+        sessionText = val;
+      } else {
+        sessionText += '*' + val;
+      }
 
-            const response = processUSSD(sessionText, demoPhone);
-            displayResponse(response);
-        }
+      const response = processUSSD(sessionText, demoPhone);
+      displayResponse(response);
+    }
 
-        // Keypad
-        el.querySelectorAll('.ussd-key[data-key]').forEach(key => {
-            key.addEventListener('click', () => {
-                input.value += key.dataset.key;
-                input.focus();
-            });
-        });
+    // Keypad
+    el.querySelectorAll('.ussd-key[data-key]').forEach(key => {
+      key.addEventListener('click', () => {
+        input.value += key.dataset.key;
+        input.focus();
+      });
+    });
 
-        el.querySelector('#ussd-send').addEventListener('click', sendInput);
-        el.querySelector('#ussd-dial').addEventListener('click', startSession);
-        el.querySelector('#ussd-clear').addEventListener('click', () => {
-            input.value = '';
-            input.focus();
-        });
+    el.querySelector('#ussd-send').addEventListener('click', sendInput);
+    el.querySelector('#ussd-dial').addEventListener('click', startSession);
+    el.querySelector('#ussd-clear').addEventListener('click', () => {
+      input.value = '';
+      input.focus();
+    });
 
-        input.addEventListener('keydown', e => { if (e.key === 'Enter') sendInput(); });
-    }, 0);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') sendInput(); });
+  }, 0);
 
-    return el;
+  return el;
 }

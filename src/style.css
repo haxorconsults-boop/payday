@@ -774,6 +774,10 @@ textarea {
   display: block;
 }
 
+.footer-logo {
+  height: 20px;
+}
+
 .navbar-nav {
   display: flex;
   align-items: center;

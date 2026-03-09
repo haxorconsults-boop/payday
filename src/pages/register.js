@@ -6,17 +6,16 @@ import { showToast } from '../components/toast.js';
 import { navigate } from '../router.js';
 
 export function renderRegister() {
-    const employers = store.getAll('employers').filter(e => e.is_active);
-    const el = document.createElement('div');
-    el.className = 'page flex items-center justify-center';
-    el.style.minHeight = '100vh';
+  const employers = store.getAll('employers').filter(e => e.is_active);
+  const el = document.createElement('div');
+  el.className = 'page flex items-center justify-center';
+  el.style.minHeight = '100vh';
 
-    el.innerHTML = `
+  el.innerHTML = `
     <div class="container" style="max-width: 520px; padding: 40px 20px;">
       <div class="text-center mb-xl animate-slide-up">
         <a href="#/" class="navbar-brand justify-center mb-md" style="font-size: 1.3rem;">
           <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
-          Payday
         </a>
         <h1 style="font-size: 1.5rem; font-weight: 800;">Create Your Account</h1>
         <p class="text-muted text-sm">Quick KYC — takes under 2 minutes</p>
@@ -121,122 +120,122 @@ export function renderRegister() {
     </div>
   `;
 
-    let currentOTP = null;
+  let currentOTP = null;
 
-    setTimeout(() => {
-        // Step navigation
-        el.querySelectorAll('.step-next').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const next = btn.dataset.next;
-                if (!validateStep(btn.closest('.reg-step').id.split('-')[1])) return;
-                goToStep(next);
-            });
+  setTimeout(() => {
+    // Step navigation
+    el.querySelectorAll('.step-next').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const next = btn.dataset.next;
+        if (!validateStep(btn.closest('.reg-step').id.split('-')[1])) return;
+        goToStep(next);
+      });
+    });
+
+    el.querySelectorAll('.step-prev').forEach(btn => {
+      btn.addEventListener('click', () => goToStep(btn.dataset.prev));
+    });
+
+    // Send OTP
+    el.querySelector('#send-reg-otp-btn').addEventListener('click', async () => {
+      if (!validateStep('3')) return;
+      const phone = normalizePhone(el.querySelector('#reg-phone').value);
+      const btn2 = el.querySelector('#send-reg-otp-btn');
+      btn2.disabled = true;
+      btn2.innerHTML = '<span class="spinner"></span>';
+
+      const result = await simulateOTP(phone);
+      currentOTP = result.otp;
+      showToast(`OTP sent! (Demo: ${result.otp})`, 'success');
+      el.querySelector('#reg-otp-phone').textContent = el.querySelector('#reg-phone').value;
+      goToStep('4');
+    });
+
+    // Complete registration
+    el.querySelector('#complete-reg-btn').addEventListener('click', () => {
+      const otpVal = el.querySelector('#reg-otp').value.trim();
+      if (!verifyOTP(otpVal, currentOTP)) {
+        showToast('Invalid OTP', 'error');
+        return;
+      }
+
+      const phone = normalizePhone(el.querySelector('#reg-phone').value);
+      const existing = store.findOne('users', u => u.phone === phone);
+      if (existing) {
+        showToast('Phone already registered. Please login.', 'warning');
+        navigate('/login');
+        return;
+      }
+
+      const user = store.create('users', {
+        phone,
+        id_no_enc: el.querySelector('#reg-idno').value,
+        dob: el.querySelector('#reg-dob').value,
+        full_name: el.querySelector('#reg-name').value,
+        pin_hash: el.querySelector('#reg-pin').value,
+        status: 'active',
+        pin_failed_attempts: 0
+      });
+
+      const empId = el.querySelector('#reg-employer').value;
+      if (empId) {
+        store.create('employment', {
+          user_id: user.id,
+          employer_id: empId,
+          staff_no: el.querySelector('#reg-staffno').value,
+          net_salary: Number(el.querySelector('#reg-salary').value),
+          verified: false
         });
+      }
 
-        el.querySelectorAll('.step-prev').forEach(btn => {
-            btn.addEventListener('click', () => goToStep(btn.dataset.prev));
-        });
+      // Consents
+      ['terms', 'deduction_mandate', 'data_processing'].forEach(type => {
+        store.create('consents', { user_id: user.id, consent_type: type, consent_text_version: 'v1.0', channel: 'app', accepted_at: new Date().toISOString() });
+      });
 
-        // Send OTP
-        el.querySelector('#send-reg-otp-btn').addEventListener('click', async () => {
-            if (!validateStep('3')) return;
-            const phone = normalizePhone(el.querySelector('#reg-phone').value);
-            const btn2 = el.querySelector('#send-reg-otp-btn');
-            btn2.disabled = true;
-            btn2.innerHTML = '<span class="spinner"></span>';
+      auditLog('user', user.id, 'USER_REGISTERED', 'users', user.id, { channel: 'app' });
+      session.setCurrentUser(user);
+      showToast('Registration successful! Welcome to Payday.', 'success');
+      navigate('/dashboard');
+    });
 
-            const result = await simulateOTP(phone);
-            currentOTP = result.otp;
-            showToast(`OTP sent! (Demo: ${result.otp})`, 'success');
-            el.querySelector('#reg-otp-phone').textContent = el.querySelector('#reg-phone').value;
-            goToStep('4');
-        });
+    function goToStep(step) {
+      el.querySelectorAll('.reg-step').forEach(s => s.classList.add('hidden'));
+      el.querySelector(`#step-${step}`).classList.remove('hidden');
+      // Update stepper
+      el.querySelectorAll('.stepper-step').forEach(s => {
+        const sNum = Number(s.dataset.step);
+        s.classList.toggle('active', sNum === Number(step));
+        s.classList.toggle('completed', sNum < Number(step));
+      });
+    }
 
-        // Complete registration
-        el.querySelector('#complete-reg-btn').addEventListener('click', () => {
-            const otpVal = el.querySelector('#reg-otp').value.trim();
-            if (!verifyOTP(otpVal, currentOTP)) {
-                showToast('Invalid OTP', 'error');
-                return;
-            }
+    function validateStep(step) {
+      if (step === '1') {
+        if (!el.querySelector('#reg-name').value.trim()) { showToast('Enter your full name', 'error'); return false; }
+        if (!/^\d{6,10}$/.test(el.querySelector('#reg-idno').value)) { showToast('Enter a valid ID number (6-10 digits)', 'error'); return false; }
+        if (!el.querySelector('#reg-dob').value) { showToast('Enter your date of birth', 'error'); return false; }
+        return true;
+      }
+      if (step === '2') {
+        if (!el.querySelector('#reg-employer').value) { showToast('Select your employer', 'error'); return false; }
+        if (!el.querySelector('#reg-staffno').value.trim()) { showToast('Enter your staff number', 'error'); return false; }
+        const salary = Number(el.querySelector('#reg-salary').value);
+        if (!salary || salary < 1000) { showToast('Enter a valid salary', 'error'); return false; }
+        return true;
+      }
+      if (step === '3') {
+        const phone = normalizePhone(el.querySelector('#reg-phone').value);
+        if (!phone || phone.length < 12) { showToast('Enter a valid phone number', 'error'); return false; }
+        const pin = el.querySelector('#reg-pin').value;
+        if (!/^\d{4}$/.test(pin)) { showToast('PIN must be exactly 4 digits', 'error'); return false; }
+        if (pin !== el.querySelector('#reg-pin2').value) { showToast('PINs do not match', 'error'); return false; }
+        if (!el.querySelector('#reg-consent').checked) { showToast('You must accept the terms & consent', 'error'); return false; }
+        return true;
+      }
+      return true;
+    }
+  }, 0);
 
-            const phone = normalizePhone(el.querySelector('#reg-phone').value);
-            const existing = store.findOne('users', u => u.phone === phone);
-            if (existing) {
-                showToast('Phone already registered. Please login.', 'warning');
-                navigate('/login');
-                return;
-            }
-
-            const user = store.create('users', {
-                phone,
-                id_no_enc: el.querySelector('#reg-idno').value,
-                dob: el.querySelector('#reg-dob').value,
-                full_name: el.querySelector('#reg-name').value,
-                pin_hash: el.querySelector('#reg-pin').value,
-                status: 'active',
-                pin_failed_attempts: 0
-            });
-
-            const empId = el.querySelector('#reg-employer').value;
-            if (empId) {
-                store.create('employment', {
-                    user_id: user.id,
-                    employer_id: empId,
-                    staff_no: el.querySelector('#reg-staffno').value,
-                    net_salary: Number(el.querySelector('#reg-salary').value),
-                    verified: false
-                });
-            }
-
-            // Consents
-            ['terms', 'deduction_mandate', 'data_processing'].forEach(type => {
-                store.create('consents', { user_id: user.id, consent_type: type, consent_text_version: 'v1.0', channel: 'app', accepted_at: new Date().toISOString() });
-            });
-
-            auditLog('user', user.id, 'USER_REGISTERED', 'users', user.id, { channel: 'app' });
-            session.setCurrentUser(user);
-            showToast('Registration successful! Welcome to Payday.', 'success');
-            navigate('/dashboard');
-        });
-
-        function goToStep(step) {
-            el.querySelectorAll('.reg-step').forEach(s => s.classList.add('hidden'));
-            el.querySelector(`#step-${step}`).classList.remove('hidden');
-            // Update stepper
-            el.querySelectorAll('.stepper-step').forEach(s => {
-                const sNum = Number(s.dataset.step);
-                s.classList.toggle('active', sNum === Number(step));
-                s.classList.toggle('completed', sNum < Number(step));
-            });
-        }
-
-        function validateStep(step) {
-            if (step === '1') {
-                if (!el.querySelector('#reg-name').value.trim()) { showToast('Enter your full name', 'error'); return false; }
-                if (!/^\d{6,10}$/.test(el.querySelector('#reg-idno').value)) { showToast('Enter a valid ID number (6-10 digits)', 'error'); return false; }
-                if (!el.querySelector('#reg-dob').value) { showToast('Enter your date of birth', 'error'); return false; }
-                return true;
-            }
-            if (step === '2') {
-                if (!el.querySelector('#reg-employer').value) { showToast('Select your employer', 'error'); return false; }
-                if (!el.querySelector('#reg-staffno').value.trim()) { showToast('Enter your staff number', 'error'); return false; }
-                const salary = Number(el.querySelector('#reg-salary').value);
-                if (!salary || salary < 1000) { showToast('Enter a valid salary', 'error'); return false; }
-                return true;
-            }
-            if (step === '3') {
-                const phone = normalizePhone(el.querySelector('#reg-phone').value);
-                if (!phone || phone.length < 12) { showToast('Enter a valid phone number', 'error'); return false; }
-                const pin = el.querySelector('#reg-pin').value;
-                if (!/^\d{4}$/.test(pin)) { showToast('PIN must be exactly 4 digits', 'error'); return false; }
-                if (pin !== el.querySelector('#reg-pin2').value) { showToast('PINs do not match', 'error'); return false; }
-                if (!el.querySelector('#reg-consent').checked) { showToast('You must accept the terms & consent', 'error'); return false; }
-                return true;
-            }
-            return true;
-        }
-    }, 0);
-
-    return el;
+  return el;
 }

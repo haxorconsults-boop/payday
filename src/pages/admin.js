@@ -27,7 +27,7 @@ export function renderAdmin() {
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-brand">
-          <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
+          <img src="./payday-logo.png" alt="Payday" class="brand-logo" />
           IBC Admin
         </div>
         <div class="sidebar-section-title">Dashboard</div>

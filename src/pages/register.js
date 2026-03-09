@@ -15,7 +15,7 @@ export function renderRegister() {
     <div class="container" style="max-width: 520px; padding: 40px 20px;">
       <div class="text-center mb-xl animate-slide-up">
         <a href="#/" class="navbar-brand justify-center mb-md" style="font-size: 1.3rem;">
-          <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
+          <img src="./payday-logo.png" alt="Payday" class="brand-logo" />
         </a>
         <h1 style="font-size: 1.5rem; font-weight: 800;">Create Your Account</h1>
         <p class="text-muted text-sm">Quick KYC — takes under 2 minutes</p>

@@ -11,7 +11,7 @@ export function renderAdminLogin() {
     el.innerHTML = `
     <div style="max-width: 400px; width: 100%; padding: 20px;">
       <div class="text-center mb-xl animate-slide-up">
-        <img src="/payday-logo.png" alt="Payday" class="brand-logo-large" />
+        <img src="./payday-logo.png" alt="Payday" class="brand-logo-large" />
         <h1 style="font-size: 1.4rem; font-weight: 800;">Admin Console</h1>
         <p class="text-sm text-muted">Payday Management System</p>
       </div>

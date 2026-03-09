@@ -25,7 +25,7 @@ export function renderDashboard() {
     <nav class="navbar">
       <div class="container flex items-center justify-between">
         <a href="#/dashboard" class="navbar-brand">
-          <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
+          <img src="./payday-logo.png" alt="Payday" class="brand-logo" />
         </a>
         <ul class="navbar-nav">
           <li><a href="#/dashboard" class="active">Dashboard</a></li>

@@ -8,7 +8,7 @@ export function renderUSSD() {
 
   el.innerHTML = `
     <nav class="navbar"><div class="container flex items-center justify-between">
-      <a href="#/" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /></a>
+      <a href="#/" class="navbar-brand"><img src="./payday-logo.png" alt="Payday" class="brand-logo" /></a>
       <div class="flex gap-sm">
         <a href="#/login" class="btn btn-sm btn-outline">Login</a>
         <a href="#/" class="btn btn-sm btn-secondary">← Home</a>

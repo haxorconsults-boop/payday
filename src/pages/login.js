@@ -15,7 +15,7 @@ export function renderLogin() {
     <div class="container container-sm" style="max-width: 420px; padding: 40px 20px;">
       <div class="text-center mb-xl animate-slide-up">
         <a href="#/" class="navbar-brand justify-center mb-lg" style="font-size: 1.5rem;">
-          <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
+          <img src="./payday-logo.png" alt="Payday" class="brand-logo" />
         </a>
         <h1 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 8px;">Welcome Back</h1>
         <p class="text-muted text-sm">Sign in with your phone number</p>

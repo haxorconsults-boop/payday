@@ -20,7 +20,7 @@ export function renderApply() {
   el.innerHTML = `
     <nav class="navbar">
       <div class="container flex items-center justify-between">
-        <a href="#/dashboard" class="navbar-brand"><img src="/payday-logo.png" alt="Payday" class="brand-logo" /></a>
+        <a href="#/dashboard" class="navbar-brand"><img src="./payday-logo.png" alt="Payday" class="brand-logo" /></a>
         <div><a href="#/dashboard" class="btn btn-sm btn-secondary">← Dashboard</a></div>
       </div>
     </nav>

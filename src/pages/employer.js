@@ -21,7 +21,7 @@ export function renderEmployer() {
     <div class="admin-layout">
       <aside class="sidebar">
         <div class="sidebar-brand">
-          <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
+          <img src="./payday-logo.png" alt="Payday" class="brand-logo" />
           Employer Portal
         </div>
         <div class="sidebar-section-title">${employer?.name || 'Employer'}</div>

@@ -7,7 +7,7 @@ export function renderLanding() {
     <nav class="navbar">
       <div class="container flex items-center justify-between">
         <a href="#/" class="navbar-brand">
-          <img src="/payday-logo.png" alt="Payday" class="brand-logo" />
+          <img src="./payday-logo.png" alt="Payday" class="brand-logo" />
         </a>
         <ul class="navbar-nav" id="landing-nav">
           <li><a href="#/">Home</a></li>
@@ -163,7 +163,7 @@ export function renderLanding() {
         <div class="flex justify-between items-center flex-wrap gap-lg">
           <div>
             <div class="flex items-center gap-sm mb-sm">
-              <img src="/payday-logo.png" alt="Payday" class="brand-logo footer-logo" />
+              <img src="./payday-logo.png" alt="Payday" class="brand-logo footer-logo" />
             </div>
             <p class="text-sm text-muted">Instant short-term loans for salaried employees.</p>
           </div>

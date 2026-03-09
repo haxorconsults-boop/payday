@@ -1,0 +1,16 @@
+{
+  "name": "Payday",
+  "short_name": "Payday",
+  "description": "Instant short-term loans for salaried employees. Checkoff deduction + M-Pesa fallback.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1c",
+  "theme_color": "#00c853",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

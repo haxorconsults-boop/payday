@@ -1,0 +1,165 @@
+# Diamond Advance — Hybrid Checkoff Lending Platform
+
+**Hybrid (C) model**: Primary repayment via employer checkoff deduction, fallback via M-Pesa STK push. Disbursement via M-Pesa B2C. Built as Vite + vanilla JS SPA with localStorage simulation.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Frontend simulation** — All data persists in localStorage. M-Pesa, USSD, and checkoff flows are realistically simulated but don't hit real APIs. Architecture is designed for easy backend integration later.
+
+> [!IMPORTANT]
+> **Branding**: "Diamond Advance" under Diamond FSA. Dark theme with green (#00c853) + gold (#ffc107) fintech palette.
+
+---
+
+## Proposed Changes
+
+### 1. Project Structure
+
+```
+Payday/
+├── index.html
+├── vite.config.js
+├── public/
+│   ├── manifest.json
+│   └── sw.js
+├── src/
+│   ├── main.js                # Router + init
+│   ├── style.css              # Design system
+│   ├── router.js              # Hash-based SPA router
+│   ├── pages/
+│   │   ├── landing.js         # Marketing page
+│   │   ├── register.js        # Multi-step KYC
+│   │   ├── login.js           # Phone + OTP
+│   │   ├── dashboard.js       # Borrower dashboard
+│   │   ├── apply.js           # Loan application (4 steps)
+│   │   ├── loan-details.js    # Schedule + repayment tracker
+│   │   ├── repay.js           # STK push + Paybill
+│   │   ├── profile.js         # User settings
+│   │   ├── ussd.js            # USSD simulator
+│   │   ├── admin-login.js
+│   │   ├── employer-login.js
+│   │   ├── admin/
+│   │   │   ├── overview.js    # KPIs + charts
+│   │   │   ├── loans.js       # Loan management
+│   │   │   ├── users.js       # User management
+│   │   │   ├── employers.js   # Employer registry
+│   │   │   └── reports.js     # Reports + CSV export
+│   │   └── employer/
+│   │       ├── dashboard.js   # Employer overview
+│   │       ├── upload.js      # CSV deduction upload
+│   │       ├── deductions.js  # Staff deductions list
+│   │       └── remittance.js  # Reconciliation
+│   ├── components/
+│   │   ├── navbar.js, sidebar.js, modal.js
+│   │   ├── loan-card.js, stat-card.js
+│   │   ├── stepper.js, toast.js
+│   │   └── ussd-phone.js     # Feature phone widget
+│   └── utils/
+│       ├── store.js           # localStorage CRUD
+│       ├── eligibility.js     # Scoring engine
+│       ├── loan-calc.js       # Flat-fee pricing + schedules
+│       ├── mock-mpesa.js      # B2C + STK simulation
+│       ├── mock-ussd.js       # Menu state machine
+│       ├── formatters.js      # KES, dates, phones
+│       └── seed-data.js       # Demo data (5 employers, 10 users, 15 loans)
+```
+
+---
+
+### 2. Three Portals
+
+#### Borrower Portal
+| Page | Key Features |
+|------|-------------|
+| Landing | Hero "Get Paid Before Payday", features, how-it-works |
+| Register | 4-step KYC: Personal → Employment → Contact → OTP |
+| Login | Phone + OTP simulation |
+| Dashboard | Limit, active loan, next deduction, credit score, quick actions |
+| Apply | Eligibility check → amount slider + term → offer review → disbursement animation |
+| Loan Details | Repayment schedule table, status badges, circular progress |
+| Repay | STK push sim + Paybill info (123456) |
+| Profile | View/edit info, loan history, logout |
+
+#### Employer Portal (HR/Payroll)
+| Page | Key Features |
+|------|-------------|
+| Login | Email + password |
+| Dashboard | Active employees, pending deductions, remittance status |
+| Upload | CSV deduction upload (period, staff_no, id_no, phone, amount) |
+| Deductions | Staff deductions list with search |
+| Remittance | Summary, reconciliation report, dispute flagging |
+
+#### Admin Dashboard
+| Page | Key Features |
+|------|-------------|
+| Login | Hardcoded admin@diamond.co.ke / admin123 |
+| Overview | KPIs (disbursed, active, default rate), charts, recent apps |
+| Loans | Filterable table, approve/reject, detail modal |
+| Users | Search, detail modal (KYC, history, score), suspend |
+| Employers | Registry, A/B/C tiers, checkoff status, add/edit |
+| Reports | Collections, default aging, employer reconciliation, CSV export |
+
+---
+
+### 3. Loan Rules (Hybrid Flat-Fee)
+
+| Tenor | Fee Rate | Example (KES 10,000) |
+|-------|----------|---------------------|
+| 7 days | 6% | Repay 10,600 |
+| 14 days | 8% | Repay 10,800 |
+| 30 days | 10% | Repay 11,000 |
+| 60 days | 15% | Repay 11,500 |
+
+- **Max loan**: 30-40% of net salary
+- **One active loan** at a time
+- **Grace period**: 3 days
+- **Penalty**: Fixed fee, capped at 10% of principal
+- **Primary**: Employer checkoff deduction
+- **Fallback**: M-Pesa STK push on due date
+
+---
+
+### 4. USSD Simulator
+
+Full menu tree under `*384*55#` with Diamond FSA branding:
+- Register → ID → DOB → Employer → Staff No → Accept T&Cs
+- Check Limit → Shows eligible amount
+- Apply → Amount → Term → Disbursement method → Offer → PIN confirm
+- My Loan → Balance, due date, statement
+- Repay → STK push or Paybill details
+- Help → FAQs, agent, terms
+
+Feature phone styled UI: green/black, monospace, 160-char screens, keypad input.
+
+---
+
+### 5. Eligibility Scoring
+
+| Factor | Weight |
+|--------|--------|
+| Employment verified | 25% |
+| Salary consistency (3mo) | 20% |
+| Net pay threshold (≥20k) | 15% |
+| Employer risk band (A/B/C) | 20% |
+| Existing loan status | 10% |
+| Phone + ID match | 5% |
+| Account age | 5% |
+
+Score ≥ 60 → Eligible. Max amount = score% × 40% of net salary.
+
+---
+
+## Verification Plan
+
+### Browser Tests
+1. Landing page renders with Diamond branding
+2. Full registration KYC flow → saved to store
+3. Login with OTP → dashboard loads with seed data
+4. Loan application: eligibility → offer → disbursement animation
+5. Repayment via STK push → loan balance updates
+6. USSD simulator: full apply flow via keypad
+7. Admin login → KPI cards + loan table with seed data
+8. Admin approve/reject loan
+9. Employer CSV upload + deductions view
+10. Mobile responsive layout check
